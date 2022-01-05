@@ -33,6 +33,7 @@ const run = async () => {
     const labelRegExp = new RegExp(labelPattern);
 
     const token = getInput("github_token", { required: true });
+    const branchName = getInput("branch_name");
 
     if (!context.payload.pull_request) {
       throw new Error(`Unsupported event action: ${context.payload.action}.`);
@@ -47,6 +48,7 @@ const run = async () => {
     }
 
     const createdPullRequestBaseBranchToNumber = await backport({
+      branchName,
       getBody,
       getHead,
       getLabels,

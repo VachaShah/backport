@@ -13,6 +13,9 @@ inputs:
         - mergeCommitSha: SHA of the original PR's merge commit
         - number: original PR's number
     default: "Backport <%= mergeCommitSha %> from #<%= number %>."
+  branch_name:
+    description: Custom branch name for the backport PR.
+    required: false
   github_token:
     description: Token for the GitHub API.
     required: true
