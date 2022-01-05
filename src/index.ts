@@ -2,11 +2,14 @@ import { debug, error as logError, getInput, setFailed } from "@actions/core";
 import { context } from "@actions/github";
 import { EventPayloads } from "@octokit/webhooks";
 
-import { backport } from "./backport";
+import { Inputs, backport } from "./backport";
 import { getLabelsToAdd } from "./get-labels-to-add";
 
 const run = async () => {
   try {
+    const inputs: Inputs = {
+      branchName: getInput('branchName'),
+    }
     const token = getInput("github_token", { required: true });
     const titleTemplate = getInput("title_template");
     debug(JSON.stringify(context, undefined, 2));
@@ -17,6 +20,7 @@ const run = async () => {
       payload: context.payload as EventPayloads.WebhookPayloadPullRequest,
       titleTemplate,
       token,
+      inputs
     });
   } catch (error: unknown) {
     if (typeof error !== "string" && !(error instanceof Error)) {
