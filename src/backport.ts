@@ -5,6 +5,10 @@ import { GitHub } from "@actions/github/lib/utils";
 import { EventPayloads } from "@octokit/webhooks";
 import escapeRegExp from "lodash/escapeRegExp";
 
+export interface Inputs {
+  branchName: string
+}
+
 const labelRegExp = /^backport ([^ ]+)(?: ([^ ]+))?$/;
 
 const getLabelNames = ({
@@ -31,11 +35,13 @@ const getBackportBaseToHead = ({
   label,
   labels,
   pullRequestNumber,
+  branchName,
 }: {
   action: EventPayloads.WebhookPayloadPullRequest["action"];
   label: { name: string };
   labels: EventPayloads.WebhookPayloadPullRequest["pull_request"]["labels"];
   pullRequestNumber: number;
+  branchName: string;
 }): Record<string, string> => {
   const baseToHead: Record<string, string> = {};
 
@@ -46,7 +52,7 @@ const getBackportBaseToHead = ({
       const [
         ,
         base,
-        head = `backport-${pullRequestNumber}-to-${base}`,
+        head = (branchName != null) ? branchName : `backport-${pullRequestNumber}-to-${base}`,
       ] = matches;
       baseToHead[base] = head;
     }
@@ -193,11 +199,13 @@ const backport = async ({
   },
   titleTemplate,
   token,
+  inputs,
 }: {
   labelsToAdd: string[];
   payload: EventPayloads.WebhookPayloadPullRequest;
   titleTemplate: string;
   token: string;
+  inputs: Inputs;
 }) => {
   if (merged !== true) {
     return;
@@ -209,6 +217,7 @@ const backport = async ({
     label: label!,
     labels,
     pullRequestNumber,
+    inputs.branchName,
   });
 
   if (Object.keys(backportBaseToHead).length === 0) {
