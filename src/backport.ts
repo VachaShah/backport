@@ -28,16 +28,16 @@ const getLabelNames = ({
 
 const getBackportBaseToHead = ({
   action,
+  branchName,
   label,
   labels,
   pullRequestNumber,
-  branchName,
 }: {
   action: EventPayloads.WebhookPayloadPullRequest["action"];
+  branchName: string;
   label: { name: string };
   labels: EventPayloads.WebhookPayloadPullRequest["pull_request"]["labels"];
   pullRequestNumber: number;
-  branchName: string;
 }): Record<string, string> => {
   const baseToHead: Record<string, string> = {};
 
@@ -48,7 +48,9 @@ const getBackportBaseToHead = ({
       const [
         ,
         base,
-        head = (branchName != null) ? `${branchName}-to-${base}` : `backport-${pullRequestNumber}-to-${base}`,
+        head = branchName
+          ? `${branchName}-to-${base}`
+          : `backport-${pullRequestNumber}-to-${base}`,
       ] = matches;
       baseToHead[base] = head;
     }
@@ -177,6 +179,7 @@ const getFailedBackportCommentBody = ({
 };
 
 const backport = async ({
+  branchName,
   labelsToAdd,
   payload: {
     action,
@@ -195,25 +198,24 @@ const backport = async ({
   },
   titleTemplate,
   token,
-  branchName,
 }: {
+  branchName: string;
   labelsToAdd: string[];
   payload: EventPayloads.WebhookPayloadPullRequest;
   titleTemplate: string;
   token: string;
-  branchName: string;
 }) => {
-  if (merged !== true) {
+  if (!merged) {
     return;
   }
 
   const backportBaseToHead = getBackportBaseToHead({
     action,
+    branchName,
     // The payload has a label property when the action is "labeled".
     label: label!,
     labels,
     pullRequestNumber,
-    branchName,
   });
 
   if (Object.keys(backportBaseToHead).length === 0) {
