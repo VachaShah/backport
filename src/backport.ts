@@ -178,8 +178,23 @@ const getFailedBackportCommentBody = ({
   ].join("\n");
 };
 
+const deleteBackportBranch = async ({
+  head,
+  repo,
+}: {
+  head: string;
+  repo: string;
+}) => {
+  const git = async (...args: string[]) => {
+    await exec("git", args, { cwd: repo });
+  };
+
+  await git("push", "--delete", "--force", head);
+};
+
 const backport = async ({
   branchName,
+  deleteBranch,
   labelsToAdd,
   payload: {
     action,
@@ -200,6 +215,7 @@ const backport = async ({
   token,
 }: {
   branchName: string;
+  deleteBranch: boolean;
   labelsToAdd: string[];
   payload: EventPayloads.WebhookPayloadPullRequest;
   titleTemplate: string;
@@ -290,6 +306,14 @@ const backport = async ({
         });
       }
     });
+
+    if (deleteBranch) {
+      info(`Deleting backport branch ${head}`);
+      await deleteBackportBranch({
+        head,
+        repo,
+      });
+    }
   }
 };
 
