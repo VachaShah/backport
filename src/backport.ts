@@ -48,7 +48,9 @@ const getBackportBaseToHead = ({
       const [
         ,
         base,
-        head = branchName ? `${branchName}-to-${base}` : `backport-${pullRequestNumber}-to-${base}`,
+        head = branchName
+          ? `${branchName}-to-${base}`
+          : `backport-${pullRequestNumber}-to-${base}`,
       ] = matches;
       baseToHead[base] = head;
     }
