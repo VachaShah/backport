@@ -10,11 +10,13 @@ const run = async () => {
     const token = getInput("github_token", { required: true });
     const titleTemplate = getInput("title_template");
     const branchName = getInput("branch_name");
+    const deleteBranch = getInput("delete-branch") === "true";
     debug(JSON.stringify(context, undefined, 2));
     const labelsInput = getInput("add_labels");
     const labelsToAdd = getLabelsToAdd(labelsInput);
     await backport({
       branchName,
+      deleteBranch,
       labelsToAdd,
       payload: context.payload as EventPayloads.WebhookPayloadPullRequest,
       titleTemplate,

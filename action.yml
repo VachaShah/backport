@@ -8,6 +8,10 @@ inputs:
   branch_name:
     description: Custom branch name for the backport PR.
     required: false
+  delete_branch:
+    description: Delete the backport branch created after the backport PR is merged.
+    required: false
+    default: true
   github_token:
     description: Token for the GitHub API.
     required: true
