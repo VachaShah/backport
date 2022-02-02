@@ -176,6 +176,43 @@ const getFailedBackportCommentBody = ({
   ].join("\n");
 };
 
+const deleteBackportBranchIfMerged = async ({
+  base,
+  github,
+  head,
+  owner,
+  pullRequestNumber,
+  repo,
+}: {
+  base: string;
+  github: InstanceType<typeof GitHub>;
+  head: string;
+  owner: string;
+  pullRequestNumber: number;
+  repo: string;
+}) => {
+  const git = async (...args: string[]) => {
+    await exec("git", args, { cwd: repo });
+  };
+
+  let isMerged = false;
+  try {
+    await github.pulls.checkIfMerged({
+      owner,
+      pull_number: pullRequestNumber,
+      repo,
+    });
+    isMerged = true;
+  } catch {
+    isMerged = false;
+  }
+
+  if (isMerged) {
+    info(`The backport PR is merged, deleting the backport branch`);
+    await git("push", "--delete", "--force", base, head);
+  }
+};
+
 const backport = async ({
   branchName,
   getBody,
@@ -320,6 +357,18 @@ const backport = async ({
         );
       }
     });
+
+    if (deleteBranch) {
+      info(`Deleting backport branch ${head}`);
+      await deleteBackportBranchIfMerged({
+        base,
+        github,
+        head,
+        owner,
+        pullRequestNumber,
+        repo,
+      });
+    }
   }
 
   return createdPullRequestBaseBranchToNumber;
