@@ -3,6 +3,7 @@ import { exec } from "@actions/exec";
 import { getOctokit } from "@actions/github";
 import { GitHub } from "@actions/github/lib/utils";
 import { EventPayloads } from "@octokit/webhooks";
+import { pull } from "lodash";
 import escapeRegExp from "lodash/escapeRegExp";
 
 const labelRegExp = /^backport ([^ ]+)(?: ([^ ]+))?$/;
@@ -136,6 +137,8 @@ const backportOnce = async ({
       repo,
     });
   }
+
+  return pullRequestNumber;
 };
 
 const getFailedBackportCommentBody = ({
@@ -178,18 +181,41 @@ const getFailedBackportCommentBody = ({
   ].join("\n");
 };
 
-const deleteBackportBranch = async ({
+const deleteBackportBranchIfMerged = async ({
+  base,
+  github,
   head,
+  owner,
+  pullRequestNumber,
   repo,
 }: {
+  base: string;
+  github: InstanceType<typeof GitHub>;
   head: string;
+  owner: string;
+  pullRequestNumber: number;
   repo: string;
 }) => {
   const git = async (...args: string[]) => {
     await exec("git", args, { cwd: repo });
   };
 
-  await git("push", "--delete", "--force", head);
+  let isMerged = false;
+  try {
+    await github.pulls.checkIfMerged({
+      owner,
+      pull_number: pullRequestNumber,
+      repo,
+    });
+    isMerged = true;
+  } catch {
+    isMerged = false;
+  }
+
+  if (isMerged) {
+    info(`The backport PR is merged, deleting the backport branch`);
+    await git("push", "--delete", "--force", base, head);
+  }
 };
 
 const backport = async ({
@@ -274,7 +300,7 @@ const backport = async ({
 
     await group(`Backporting to ${base} on ${head}`, async () => {
       try {
-        await backportOnce({
+        const pullRequestNumber = await backportOnce({
           base,
           body,
           commitToBackport,
@@ -309,8 +335,12 @@ const backport = async ({
 
     if (deleteBranch) {
       info(`Deleting backport branch ${head}`);
-      await deleteBackportBranch({
+      await deleteBackportBranchIfMerged({
+        base,
+        github,
         head,
+        owner,
+        pullRequestNumber,
         repo,
       });
     }
