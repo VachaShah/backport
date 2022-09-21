@@ -88,6 +88,7 @@ const backportOnce = async ({
   base,
   body,
   commitToBackport,
+  filesToSkip,
   github,
   head,
   labelsToAdd,
@@ -98,6 +99,7 @@ const backportOnce = async ({
   base: string;
   body: string;
   commitToBackport: string;
+  filesToSkip: string[];
   github: InstanceType<typeof GitHub>;
   head: string;
   labelsToAdd: string[];
@@ -112,7 +114,12 @@ const backportOnce = async ({
   await git("switch", base);
   await git("switch", "--create", head);
   try {
-    await git("cherry-pick", "-x", commitToBackport);
+    await git("cherry-pick", "-x", "-n", commitToBackport);
+    for (const file of filesToSkip) {
+      await git("checkout", "HEAD", file);
+    }
+
+    await git("commit", "--no-edit", "-s");
   } catch (error: unknown) {
     await git("cherry-pick", "--abort");
     throw error;
@@ -221,6 +228,7 @@ const deleteBackportBranchIfMerged = async ({
 const backport = async ({
   branchName,
   deleteBranch,
+  filesToSkip,
   labelsToAdd,
   payload: {
     action,
@@ -242,6 +250,7 @@ const backport = async ({
 }: {
   branchName: string;
   deleteBranch: boolean;
+  filesToSkip: string[];
   labelsToAdd: string[];
   payload: EventPayloads.WebhookPayloadPullRequest;
   titleTemplate: string;
@@ -304,6 +313,7 @@ const backport = async ({
           base,
           body,
           commitToBackport,
+          filesToSkip,
           github,
           head,
           labelsToAdd,

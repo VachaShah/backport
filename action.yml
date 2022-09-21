@@ -5,6 +5,9 @@ inputs:
   add_labels:
     description: Comma separated list of labels to add to the backport PR.
     required: false
+  files_to_skip:
+    description: Comma seperated list of files to be skipped from the backport
+    required: false
   branch_name:
     description: Custom branch name for the backport PR.
     required: false

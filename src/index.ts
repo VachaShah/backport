@@ -4,6 +4,7 @@ import { EventPayloads } from "@octokit/webhooks";
 
 import { backport } from "./backport";
 import { getLabelsToAdd } from "./get-labels-to-add";
+import { getFilesToSkip } from "./get-files-to-skip";
 
 const run = async () => {
   try {
@@ -14,9 +15,12 @@ const run = async () => {
     debug(JSON.stringify(context, undefined, 2));
     const labelsInput = getInput("add_labels");
     const labelsToAdd = getLabelsToAdd(labelsInput);
+    const filesInput = getInput("files_to_skip");
+    const filesToSkip = getFilesToSkip(filesInput);
     await backport({
       branchName,
       deleteBranch,
+      filesToSkip,
       labelsToAdd,
       payload: context.payload as EventPayloads.WebhookPayloadPullRequest,
       titleTemplate,
