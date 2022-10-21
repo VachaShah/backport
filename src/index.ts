@@ -4,6 +4,7 @@ import type { PullRequestEvent } from "@octokit/webhooks-types";
 import ensureError from "ensure-error";
 import { template } from "lodash-es";
 import { backport } from "./backport.js";
+import { getFilesToSkip } from "./get-files-to-skip";
 
 const run = async () => {
   try {
@@ -34,6 +35,8 @@ const run = async () => {
 
     const token = getInput("github_token", { required: true });
     const branchName = getInput("branch_name");
+    const filesInput = getInput("files_to_skip");
+    const filesToSkip = getFilesToSkip(filesInput);
 
     if (!context.payload.pull_request) {
       throw new Error(`Unsupported event action: ${context.payload.action}.`);
@@ -49,6 +52,7 @@ const run = async () => {
 
     const createdPullRequestBaseBranchToNumber = await backport({
       branchName,
+      filesToSkip
       getBody,
       getHead,
       getLabels,

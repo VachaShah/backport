@@ -79,6 +79,7 @@ const backportOnce = async ({
   base,
   body,
   commitSha,
+  filesToSkip,
   github,
   head,
   labels,
@@ -89,6 +90,7 @@ const backportOnce = async ({
   base: string;
   body: string;
   commitSha: string;
+  filesToSkip: string[];
   github: InstanceType<typeof GitHub>;
   head: string;
   labels: readonly string[];
@@ -104,6 +106,11 @@ const backportOnce = async ({
   await git("switch", "--create", head);
   try {
     await git("cherry-pick", "-x", commitSha);
+    for (const file of filesToSkip) {
+      await git("checkout", "HEAD", file);
+    }
+
+    await git("commit", "--no-edit", "-s");
   } catch (error: unknown) {
     await git("cherry-pick", "--abort");
     throw error;
@@ -176,45 +183,9 @@ const getFailedBackportCommentBody = ({
   ].join("\n");
 };
 
-const deleteBackportBranchIfMerged = async ({
-  base,
-  github,
-  head,
-  owner,
-  pullRequestNumber,
-  repo,
-}: {
-  base: string;
-  github: InstanceType<typeof GitHub>;
-  head: string;
-  owner: string;
-  pullRequestNumber: number;
-  repo: string;
-}) => {
-  const git = async (...args: string[]) => {
-    await exec("git", args, { cwd: repo });
-  };
-
-  let isMerged = false;
-  try {
-    await github.pulls.checkIfMerged({
-      owner,
-      pull_number: pullRequestNumber,
-      repo,
-    });
-    isMerged = true;
-  } catch {
-    isMerged = false;
-  }
-
-  if (isMerged) {
-    info(`The backport PR is merged, deleting the backport branch`);
-    await git("push", "--delete", "--force", base, head);
-  }
-};
-
 const backport = async ({
   branchName,
+  filesToSkip,
   getBody,
   getHead,
   getLabels,
@@ -224,6 +195,7 @@ const backport = async ({
   token,
 }: {
   branchName: string,
+  filesToSkip: string[];
   getBody: (
     props: Readonly<{
       base: string;
@@ -329,6 +301,7 @@ const backport = async ({
           base,
           body,
           commitSha: mergeCommitSha,
+          filesToSkip,
           github,
           head,
           labels,
@@ -357,18 +330,6 @@ const backport = async ({
         );
       }
     });
-
-    if (deleteBranch) {
-      info(`Deleting backport branch ${head}`);
-      await deleteBackportBranchIfMerged({
-        base,
-        github,
-        head,
-        owner,
-        pullRequestNumber,
-        repo,
-      });
-    }
   }
 
   return createdPullRequestBaseBranchToNumber;
