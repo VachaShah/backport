@@ -52,7 +52,7 @@ const run = async () => {
 
     const createdPullRequestBaseBranchToNumber = await backport({
       branchName,
-      filesToSkip
+      filesToSkip,
       getBody,
       getHead,
       getLabels,
