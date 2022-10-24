@@ -25,4 +25,4 @@ For example, if a pull request has the labels `backport staging` and `backport p
 
 This fork has some new features on top of the original Github Action. Following is a list of new features and how to use them:
 
-1. `branch_name`: This optional input option can be added to the Github Action in order to pass custom branch name prefixes for the backport pull requests. For example, if `branch_name` is `auto/backport-${pull_request_number}`, the branch created for backport pull requests will be `auto/backport-${pull_request_number}-to-${base}`. The default is `backport-${pullRequestNumber}-to-${base}`.
+1. `files_to_skip`: This optional input option can be added to the Github Action in order to pass a list of files that can be skipped during backport.

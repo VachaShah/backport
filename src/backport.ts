@@ -184,7 +184,6 @@ const getFailedBackportCommentBody = ({
 };
 
 const backport = async ({
-  branchName,
   filesToSkip,
   getBody,
   getHead,
@@ -194,7 +193,6 @@ const backport = async ({
   payload,
   token,
 }: {
-  branchName: string,
   filesToSkip: string[];
   getBody: (
     props: Readonly<{
@@ -284,7 +282,7 @@ const backport = async ({
       mergeCommitSha,
       number,
     });
-    const head = (branchName != null) ? branchName : getHead({ base, number });
+    const head = getHead({ base, number });
     const labels = getLabels({
       base,
       labels: originalLabels

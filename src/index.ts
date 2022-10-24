@@ -34,7 +34,6 @@ const run = async () => {
     const labelRegExp = new RegExp(labelPattern);
 
     const token = getInput("github_token", { required: true });
-    const branchName = getInput("branch_name");
     const filesInput = getInput("files_to_skip");
     const filesToSkip = getFilesToSkip(filesInput);
 
@@ -51,7 +50,6 @@ const run = async () => {
     }
 
     const createdPullRequestBaseBranchToNumber = await backport({
-      branchName,
       filesToSkip,
       getBody,
       getHead,
