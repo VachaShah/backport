@@ -154,7 +154,7 @@ const getFailedBackportCommentBody = ({
   errorMessage: string;
   head: string;
 }) => {
-  const worktreePath = `.worktrees/backport-${base}`;
+  const worktreePath = `../.worktrees/backport-${base}`;
   return [
     `The backport to \`${base}\` failed:`,
     "```",
@@ -167,7 +167,7 @@ const getFailedBackportCommentBody = ({
     "# Create a new working tree",
     `git worktree add ${worktreePath} ${base}`,
     "# Navigate to the new working tree",
-    `cd ${worktreePath}`,
+    `pushd ${worktreePath}`,
     "# Create a new branch",
     `git switch --create ${head}`,
     "# Cherry-pick the merged commit of this pull request and resolve the conflicts",
@@ -175,7 +175,7 @@ const getFailedBackportCommentBody = ({
     "# Push it to GitHub",
     `git push --set-upstream origin ${head}`,
     "# Go back to the original working tree",
-    "cd ../..",
+    "popd",
     "# Delete the working tree",
     `git worktree remove ${worktreePath}`,
     "```",
