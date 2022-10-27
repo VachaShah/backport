@@ -105,7 +105,7 @@ const backportOnce = async ({
   await git("switch", base);
   await git("switch", "--create", head);
   try {
-    await git("cherry-pick", "-x", commitSha);
+    await git("cherry-pick", "-x", "-n", commitSha);
     for (const file of filesToSkip) {
       await git("checkout", "HEAD", file);
     }
