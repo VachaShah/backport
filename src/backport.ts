@@ -105,7 +105,14 @@ const backportOnce = async ({
   await git("switch", base);
   await git("switch", "--create", head);
   try {
-    await git("cherry-pick", "-x", "-n", commitSha);
+    try {
+      await git("cherry-pick", "-x", "-n", commitSha);
+    } catch (error: unknown) {
+      logError(
+        "Possibly a conflict error. Trying to skip possible conflict files. ",
+      );
+    }
+
     for (const file of filesToSkip) {
       await git("checkout", "HEAD", file);
     }
