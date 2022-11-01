@@ -155,13 +155,15 @@ const getFailedBackportCommentBody = ({
   commitSha,
   errorMessage,
   head,
+  repo,
 }: {
   base: string;
   commitSha: string;
   errorMessage: string;
   head: string;
+  repo: string;
 }) => {
-  const worktreePath = `../.worktrees/backport-${base}`;
+  const worktreePath = `../.worktrees/${repo}/backport-${base}`;
   return [
     `The backport to \`${base}\` failed:`,
     "```",
@@ -169,6 +171,8 @@ const getFailedBackportCommentBody = ({
     "```",
     "To backport manually, run these commands in your terminal:",
     "```bash",
+    "# Navigate to the root of your repository",
+    "cd $(git rev-parse --show-toplevel)",
     "# Fetch latest updates from GitHub",
     "git fetch",
     "# Create a new working tree",
@@ -327,6 +331,7 @@ const backport = async ({
               commitSha: mergeCommitSha,
               errorMessage: error.message,
               head,
+              repo
             }),
             issue_number: number,
             owner,
