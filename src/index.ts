@@ -4,7 +4,7 @@ import type { PullRequestEvent } from "@octokit/webhooks-types";
 import ensureError from "ensure-error";
 import { template } from "lodash-es";
 import { backport } from "./backport.js";
-import { getFilesToSkip } from "./get-files-to-skip";
+import { getFilesToSkip } from "./get-files-to-skip.js";
 
 const run = async () => {
   try {

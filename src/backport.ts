@@ -113,9 +113,11 @@ const backportOnce = async ({
       );
     }
 
+    /* eslint-disable no-await-in-loop */
     for (const file of filesToSkip) {
       await git("checkout", "HEAD", file);
     }
+    /* eslint-enable no-await-in-loop */
 
     await git("commit", "--no-edit", "-s");
   } catch (error: unknown) {
