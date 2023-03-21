@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { group, info, error as logError, warning } from "@actions/core";
 import { exec } from "@actions/exec";
 import { getOctokit } from "@actions/github";
@@ -108,9 +109,14 @@ const backportOnce = async ({
     try {
       await git("cherry-pick", "-x", "-n", commitSha);
     } catch (error: unknown) {
-      logError(
-        "Possibly a conflict error. Trying to skip possible conflict files. ",
-      );
+      if (error instanceof Error) {
+        logError(
+          "Possibly a conflict error. Trying to skip possible conflict files. ",
+        );
+        console.log(error.message);
+      } else {
+        console.log("Unexpected error", error);
+      }
     }
 
     /* eslint-disable no-await-in-loop */
@@ -273,14 +279,41 @@ const backport = async ({
   cloneUrl.username = "x-access-token";
   cloneUrl.password = token;
 
+  let authorName = "";
+  let authorEmail = "";
+
+  const options = {
+    listeners: {
+      stdout(data: Buffer) {
+        authorName += data.toString();
+      },
+    },
+  };
+  await exec("git", ["show", "-s", "--format='%an'", mergeCommitSha], options);
+
+  const optionsNext = {
+    listeners: {
+      stdout(data: Buffer) {
+        authorEmail += data.toString();
+      },
+    },
+  };
+  await exec(
+    "git",
+    ["show", "-s", "--format='%ae'", mergeCommitSha],
+    optionsNext,
+  );
+
+  info(`Getting author name ${authorName} and email ${authorEmail}...`);
+
   await exec("git", ["clone", cloneUrl.toString()]);
   await exec("git", [
     "config",
     "--global",
-    "user.email",
+    authorEmail,
     "github-actions[bot]@users.noreply.github.com",
   ]);
-  await exec("git", ["config", "--global", "user.name", "github-actions[bot]"]);
+  await exec("git", ["config", "--global", authorName, "github-actions[bot]"]);
 
   const createdPullRequestBaseBranchToNumber: { [base: string]: number } = {};
 
