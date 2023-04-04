@@ -282,6 +282,8 @@ const backport = async ({
   let authorName = "";
   let authorEmail = "";
 
+  await exec("git", ["clone", cloneUrl.toString()]);
+
   const options = {
     listeners: {
       stdout(data: Buffer) {
@@ -306,7 +308,6 @@ const backport = async ({
 
   info(`Getting author name ${authorName} and email ${authorEmail}...`);
 
-  await exec("git", ["clone", cloneUrl.toString()]);
   await exec("git", [
     "config",
     "--global",
