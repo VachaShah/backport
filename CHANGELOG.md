@@ -1,3 +1,5 @@
+# 2.2.0 ()
+
 # 2.1.0 (10/28/2022)
 
 - Put worktree outside of repo in manual steps ([#5](https://github.com/VachaShah/backport/pull/5))
