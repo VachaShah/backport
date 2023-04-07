@@ -315,10 +315,10 @@ const backport = async ({
   await exec("git", [
     "config",
     "--global",
+    "user.email",
     authorEmail,
-    "github-actions[bot]@users.noreply.github.com",
   ]);
-  await exec("git", ["config", "--global", authorName, "github-actions[bot]"]);
+  await exec("git", ["config", "--global", "user.name", authorName]);
 
   const createdPullRequestBaseBranchToNumber: { [base: string]: number } = {};
 
