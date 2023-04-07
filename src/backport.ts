@@ -291,7 +291,11 @@ const backport = async ({
       },
     },
   };
-  await exec("git", ["show", "-s", "--format='%an'", mergeCommitSha], options);
+  await exec(
+    "git",
+    ["-C", repo, "show", "-s", "--format='%an'", mergeCommitSha],
+    options,
+  );
 
   const optionsNext = {
     listeners: {
@@ -302,7 +306,7 @@ const backport = async ({
   };
   await exec(
     "git",
-    ["show", "-s", "--format='%ae'", mergeCommitSha],
+    ["-C", repo, "show", "-s", "--format='%ae'", mergeCommitSha],
     optionsNext,
   );
 
