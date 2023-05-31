@@ -202,6 +202,7 @@ const getFailedBackportCommentBody = ({
 };
 
 const backport = async ({
+  failureLabels,
   filesToSkip,
   getBody,
   getHead,
@@ -211,6 +212,7 @@ const backport = async ({
   payload,
   token,
 }: {
+  failureLabels: string[];
   filesToSkip: string[];
   getBody: (
     props: Readonly<{
@@ -345,6 +347,18 @@ const backport = async ({
             repo,
           },
         );
+
+        if (failureLabels.length > 0) {
+          await github.request(
+            "POST /repos/{owner}/{repo}/issues/{issue_number}/labels",
+            {
+              issue_number: number,
+              labels: failureLabels,
+              owner,
+              repo,
+            },
+          );
+        }
       }
     });
   }
