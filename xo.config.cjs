@@ -48,7 +48,6 @@ module.exports = {
         "newlines-between": "never",
       },
     ],
-    "no-console": "error",
     "object-shorthand": [
       "error",
       "always",

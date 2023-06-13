@@ -108,9 +108,14 @@ const backportOnce = async ({
     try {
       await git("cherry-pick", "-x", "-n", commitSha);
     } catch (error: unknown) {
-      logError(
-        "Possibly a conflict error. Trying to skip possible conflict files. ",
-      );
+      if (error instanceof Error) {
+        logError(
+          "Possibly a conflict error. Trying to skip possible conflict files. ",
+        );
+        console.log(error.message);
+      } else {
+        console.log("Unexpected error", error);
+      }
     }
 
     /* eslint-disable no-await-in-loop */
@@ -333,7 +338,7 @@ const backport = async ({
               commitSha: mergeCommitSha,
               errorMessage: error.message,
               head,
-              repo
+              repo,
             }),
             issue_number: number,
             owner,
