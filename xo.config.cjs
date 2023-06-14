@@ -24,6 +24,7 @@ module.exports = {
     "@typescript-eslint/naming-convention": "off",
     // Forbid function declarations.
     "func-style": ["error", "expression", { allowArrowFunctions: true }],
+    "import/extensions": "off",
     // Already taken care of by TypeScript.
     "import/namespace": "off",
     // Named export are better for static analysis.
