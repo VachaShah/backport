@@ -1,3 +1,7 @@
+# 2.3.0 (4/10/2024)
+
+- Add comment support for file_to_skip for visibility ([#13](https://github.com/VachaShah/backport/pull/13))
+
 # 2.1.0 (10/28/2022)
 
 - Put worktree outside of repo in manual steps ([#5](https://github.com/VachaShah/backport/pull/5))

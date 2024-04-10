@@ -104,6 +104,7 @@ const backportOnce = async ({
 
   await git("switch", base);
   await git("switch", "--create", head);
+  let partialBackport = false;
   try {
     try {
       await git("cherry-pick", "-x", "-n", commitSha);
@@ -112,17 +113,20 @@ const backportOnce = async ({
         logError(
           "Possibly a conflict error. Trying to skip possible conflict files. ",
         );
+        partialBackport = true;
         console.log(error.message);
       } else {
         console.log("Unexpected error", error);
       }
     }
 
-    /* eslint-disable no-await-in-loop */
-    for (const file of filesToSkip) {
-      await git("checkout", "HEAD", file);
+    if (partialBackport) {
+      /* eslint-disable no-await-in-loop */
+      for (const file of filesToSkip) {
+        await git("checkout", "HEAD", file);
+      }
+      /* eslint-enable no-await-in-loop */
     }
-    /* eslint-enable no-await-in-loop */
 
     await git("commit", "--no-edit", "-s");
   } catch (error: unknown) {
@@ -153,8 +157,39 @@ const backportOnce = async ({
     );
   }
 
+  if (partialBackport) {
+    await github.request(
+      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+      {
+        body: getPartialBackportCommentBody({
+          base,
+          filesToSkip,
+        }),
+        issue_number: number,
+        owner,
+        repo,
+      },
+    );
+  }
+
   info(`PR #${number} has been created.`);
   return number;
+};
+
+const getPartialBackportCommentBody = ({
+  base,
+  filesToSkip,
+}: {
+  base: string;
+  filesToSkip: string[];
+}) => {
+  return [
+    `This backport to \`${base}\` skipped certain files:`,
+    "```",
+    filesToSkip.join(","),
+    "```",
+    "Please manually backport these files to the PR if needed.",
+  ].join("\n");
 };
 
 const getFailedBackportCommentBody = ({
